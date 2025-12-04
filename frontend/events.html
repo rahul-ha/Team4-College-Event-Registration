@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Events — EventPass</title>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">E</div>
+      <h1>EventPass</h1>
+    </div>
+    <nav>
+        <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="scanner.html">Scanner</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <h2>🎉 Upcoming Events</h2>
+    <p>Register for exciting college events and get your digital pass instantly</p>
+  </div>
+
+  <div class="grid">
+    <main>
+      <div id="eventsList" class="events-grid">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading events...</p>
+        </div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="sidebar-card">
+        <h3>👤 Your Account</h3>
+        <div id="accountBox"></div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>Quick Actions</h4>
+        <div class="quick-actions">
+          <button class="btn btn-primary" onclick="goDashboard()">📱 My Tickets</button>
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 Refresh Events</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="payModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💳 Complete Payment</h3>
+      <p>Mock payment gateway for demonstration</p>
+    </div>
+    <div class="modal-body">
+      <div class="payment-detail" id="paymentDetails"></div>
+      <p style="font-size:14px;color:#64748b;margin-top:16px">
+        This is a simulated payment. In production, this would connect to a real payment gateway.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closePay()">Cancel</button>
+      <button class="btn btn-primary" id="payBtn" onclick="completePayment()">Pay Now</button>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>
