@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>EventPass — Seamless Event Management</title>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">E</div>
+      <h1>EventPass</h1>
+    </div>
+    <nav>
+      <a href="events.html">Events</a>
+      <a href="scanner.html">Scanner</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <section class="hero-section">
+    <div class="hero-content">
+      <h2>Paperless Entry for College Events</h2>
+      <p>Transform your college fest experience with secure QR-based ticketing. Register, pay, and enter in seconds. No queues, no paper tickets, no chaos.</p>
+      
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-number">&lt;1s</span>
+          <span class="stat-label">Check-in Time</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Duplicate Block</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">Offline</span>
+          <span class="stat-label">Sync Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="auth-card" id="authCard">
+        <h3 id="authTitle">Login to EventPass</h3>
+
+        <div id="loginForm">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input id="loginEmail" type="email" placeholder="you@college.edu">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input id="loginPass" type="password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-primary" onclick="login()">Sign In</button>
+          
+          <div class="divider"><span>New to EventPass?</span></div>
+          
+          <div class="form-footer">
+            <a class="link" onclick="showRegister()">Create your account</a>
+          </div>
+        </div>
+
+        <div id="registerForm" style="display:none">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input id="regName" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input id="regEmail" type="email" placeholder="you@college.edu">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input id="regPass" type="password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-primary" onclick="registerUser()">Create Account</button>
+          
+          <div class="divider"><span>Already registered?</span></div>
+          
+          <div class="form-footer">
+            <a class="link" onclick="showLogin()">Sign in instead</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h4>Lightning Fast</h4>
+      <p>Check-in participants in under 1 second with instant QR code verification. No more long queues at the gate.</p>
+    </div>
+    
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h4>Tamper-Proof</h4>
+      <p>Military-grade encryption prevents duplicate entries and fake tickets. Each QR code is unique and secure.</p>
+    </div>
+    
+    <div class="feature-card">
+      <div class="feature-icon">📡</div>
+      <h4>Offline Ready</h4>
+      <p>Scanner works even with spotty connectivity. Automatic sync when connection is restored.</p>
+    </div>
+  </section>
+
+  <section class="benefits">
+    <h3>Built for College Fests & Technical Events</h3>
+    <div class="benefit-grid">
+      <div class="benefit-item">
+        <div class="check-icon">✓</div>
+        <div class="benefit-text">
+          <h5>Multi-Event Support</h5>
+          <p>Handle multiple events simultaneously - concerts, hackathons, workshops, all in one platform.</p>
+        </div>
+      </div>
+      
+      <div class="benefit-item">
+        <div class="check-icon">✓</div>
+        <div class="benefit-text">
+          <h5>Real-Time Analytics</h5>
+          <p>Track registrations vs actual check-ins with live dashboard updates for organizers.</p>
+        </div>
+      </div>
+      
+      <div class="benefit-item">
+        <div class="check-icon">✓</div>
+        <div class="benefit-text">
+          <h5>Automated Emails</h5>
+          <p>Instant ticket delivery with QR codes sent directly to participant email addresses.</p>
+        </div>
+      </div>
+      
+      <div class="benefit-item">
+        <div class="check-icon">✓</div>
+        <div class="benefit-text">
+          <h5>Volunteer Management</h5>
+          <p>Create temporary scanner accounts for gate volunteers with role-based access control.</p>
+        </div>
+      </div>
+      
+      <div class="benefit-item">
+        <div class="check-icon">✓</div>
+        <div class="benefit-text">
+          <h5>Manual Fallback</h5>
+          <p>Search by ID or phone number if QR scanning fails - always have a backup option.</p>
+        </div>
+      </div>
+      
+      <div class="benefit-item">
+        <div class="check-icon">✓</div>
+        <div class="benefit-text">
+          <h5>Data Export</h5>
+          <p>Download participant lists for certificates and attendance records with one click.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+
+</body>
+</html>
