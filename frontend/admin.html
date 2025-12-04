@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Dashboard — EventPass</title>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">E</div>
+      <h1>EventPass</h1>
+    </div>
+    <nav>
+        <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="scanner.html">Scanner</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <h2>🎛️ Admin Dashboard</h2>
+    <p>Manage events, volunteers, and view real-time analytics</p>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-icon primary">🎉</div>
+      <div class="stat-value" id="totalEvents">0</div>
+      <div class="stat-label">Total Events</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success">🎟️</div>
+      <div class="stat-value" id="totalRegistrations">0</div>
+      <div class="stat-label">Total Registrations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning">✅</div>
+      <div class="stat-value" id="totalCheckins">0</div>
+      <div class="stat-label">Total Check-ins</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon secondary">👥</div>
+      <div class="stat-value" id="checkInRate">0%</div>
+      <div class="stat-label">Check-in Rate</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Sidebar: Create Forms -->
+    <aside>
+      <div class="card">
+        <h3>➕ Create Event</h3>
+        <div class="form-group">
+          <label>Event Name</label>
+          <input id="evName" placeholder="Tech Fest 2024">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="evDesc" rows="3" placeholder="An amazing tech fest with workshops, competitions, and more..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Price (₹)</label>
+          <input id="evPrice" type="number" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Capacity</label>
+          <input id="evCap" type="number" value="100" min="1">
+        </div>
+        <button class="btn btn-primary" onclick="createEvent()">
+          🎉 Create Event
+        </button>
+
+        <h4>👤 Create Volunteer</h4>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="volName" placeholder="John Doe">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="volEmail" type="email" placeholder="volunteer@college.edu">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="volPass" type="password" placeholder="••••••••">
+        </div>
+        <button class="btn btn-success" onclick="createVolunteer()">
+          ✨ Create Volunteer Account
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content: Events & Analytics -->
+    <main>
+      <div class="card">
+        <h3>📅 Events Management</h3>
+        <div id="eventsTable">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading events...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 Real-Time Analytics</h3>
+        <div id="analytics">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Computing analytics...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Tickets Modal -->
+<div id="ticketsModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Event Tickets</h3>
+      <button class="close-btn" onclick="closeTicketsModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Tickets table will be inserted here -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" onclick="closeTicketsModal()">Close</button>
+      <button class="btn btn-success btn-sm" id="downloadBtn" onclick="downloadCSV()">
+        📥 Download CSV
+      </button>
+    </div>
+  </div>
+</div>
