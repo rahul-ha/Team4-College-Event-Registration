@@ -117,6 +117,270 @@
 </div>
 
 <!-- html5-qrcode library -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+const API_BASE = "http://localhost:5000/api";
+const offlineKey = 'eventpass_offline_scans';
+let activityLog = [];
+let successCount = 0;
+let failedCount = 0;
+let isScanning = false;
 
+function updateStats(){
+  document.getElementById('successCount').textContent = successCount;
+  document.getElementById('failedCount').textContent = failedCount;
+}
+
+function addActivity(msg, ok = true){
+  activityLog.unshift({
+    msg,
+    ok,
+    time: Date.now()
+  });
+  
+  if(activityLog.length > 50) activityLog.pop();
+  
+  if(ok) successCount++;
+  else failedCount++;
+  
+  updateStats();
+  renderActivity();
+}
+
+function renderActivity(){
+  const container = document.getElementById('activity');
+  
+  if(activityLog.length === 0){
+    container.innerHTML = '<div class="empty-activity">No scan activity yet</div>';
+    return;
+  }
+  
+  const html = activityLog.map(a => {
+    const className = a.ok ? 'activity-success' : 'activity-error';
+    const timeStr = new Date(a.time).toLocaleTimeString();
+    return `
+      <div class="activity-item ${className}">
+        <div class="activity-message">${escapeHtml(a.msg)}</div>
+        <div class="activity-time">${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+  
+  container.innerHTML = html;
+}
+
+function offlinePush(token){
+  const arr = JSON.parse(localStorage.getItem(offlineKey) || '[]');
+  arr.push({token, ts: Date.now()});
+  localStorage.setItem(offlineKey, JSON.stringify(arr));
+  updateOfflineCount();
+}
+
+function updateOfflineCount(){
+  const arr = JSON.parse(localStorage.getItem(offlineKey) || '[]');
+  const badge = document.getElementById('offlineBadge');
+  const countEl = document.getElementById('offlineCount');
+  
+  if(arr.length > 0){
+    badge.style.display = 'inline-flex';
+    countEl.textContent = `${arr.length} scan${arr.length === 1 ? '' : 's'} pending sync`;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function setStatus(message, type = 'idle'){
+  const resultEl = document.getElementById('scanResult');
+  resultEl.textContent = message;
+  resultEl.className = `scan-status status-${type}`;
+}
+
+async function onScanSuccess(token){
+  if(isScanning) return; // Prevent multiple rapid scans
+  isScanning = true;
+  
+  setStatus('🔄 Validating ticket...', 'scanning');
+  
+  try {
+    const res = await fetch(API_BASE + '/tickets/verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token})
+    });
+    
+    const data = await res.json();
+    
+    if(data.status === 'ok'){
+      const name = data.ticket?.name || 'Attendee';
+      const event = data.ticket?.event?.name || 'Event';
+      setStatus(`✅ ALLOWED - ${name}`, 'success');
+      addActivity(`✅ Check-in: ${name} → ${event}`, true);
+      
+      // Play success sound (optional)
+      playSound('success');
+    } 
+    else if(data.status === 'duplicate'){
+      setStatus('🚫 DUPLICATE - Already checked in', 'error');
+      addActivity(`🚫 Duplicate attempt: ${data.ticketId || 'Unknown'}`, false);
+      playSound('error');
+    } 
+    else {
+      setStatus('❌ INVALID - Token not recognized', 'error');
+      addActivity('❌ Invalid token scanned', false);
+      playSound('error');
+    }
+  } catch (err) {
+    // Offline - store for later sync
+    offlinePush(token);
+    setStatus('📡 OFFLINE - Saved for sync', 'offline');
+    addActivity('📡 Saved offline: Will sync when online', true);
+  }
+  
+  // Reset after 3 seconds
+  setTimeout(() => {
+    if(!isScanning) return;
+    setStatus('Ready to scan...', 'idle');
+    isScanning = false;
+  }, 3000);
+}
+
+async function manualVerify(){
+  const val = document.getElementById('manualToken').value.trim();
+  if(!val){
+    alert('⚠️ Please enter a token or ticket ID');
+    return;
+  }
+  
+  // If looks like a JWT token (contains dots)
+  if(val.split('.').length >= 3){
+    await onScanSuccess(val);
+  } else {
+    // Treat as ticket ID - fetch and verify
+    try{
+      const r = await fetch(API_BASE + '/tickets/' + val);
+      const d = await r.json();
+      
+      if(d.qrToken){
+        await onScanSuccess(d.qrToken);
+      } else {
+        alert('❌ Ticket not found or no QR token available');
+      }
+    } catch(e){
+      alert('❌ Lookup failed: ' + e.message);
+    }
+  }
+  
+  document.getElementById('manualToken').value = '';
+}
+
+async function syncOffline(){
+  const arr = JSON.parse(localStorage.getItem(offlineKey) || '[]');
+  
+  if(!arr.length){
+    alert('ℹ️ No offline scans to sync');
+    return;
+  }
+  
+  try {
+    const tokens = arr.map(x => x.token);
+    const res = await fetch(API_BASE + '/tickets/bulk-verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({tokens})
+    });
+    
+    const data = await res.json();
+    
+    if(data.results){
+      data.results.forEach(r => {
+        if(r.status === 'ok'){
+          addActivity(`🔄 Synced: ${r.ticketId || 'Ticket'}`, true);
+        } else if(r.status === 'duplicate'){
+          addActivity(`🔄 Synced (duplicate): ${r.ticketId || 'Ticket'}`, false);
+        } else {
+          addActivity('🔄 Synced (invalid)', false);
+        }
+      });
+    }
+    
+    localStorage.removeItem(offlineKey);
+    updateOfflineCount();
+    alert(`✅ Successfully synced ${arr.length} scan${arr.length === 1 ? '' : 's'}!`);
+  } catch(e) {
+    alert('❌ Sync failed: ' + e.message);
+  }
+}
+
+async function searchByPhone(){
+  const phone = prompt('Enter phone number to search:');
+  if(!phone) return;
+  
+  try{
+    const res = await fetch(API_BASE + '/tickets/search?phone=' + encodeURIComponent(phone));
+    const data = await res.json();
+    
+    if(Array.isArray(data) && data.length){
+      const t = data[0];
+      const token = t.qrToken;
+      const msg = `Found ticket for ${t.name}\nEvent: ${t.event?.name || 'Unknown'}\nStatus: ${t.used ? 'Already checked in' : 'Active'}`;
+      
+      if(confirm(msg + '\n\nVerify this ticket now?')){
+        await onScanSuccess(token);
+      }
+    } else {
+      alert('❌ No tickets found for this phone number');
+    }
+  } catch(e){
+    alert('❌ Search failed: ' + e.message);
+  }
+}
+
+function playSound(type){
+  // Optional: Add sound effects
+  // Can use Web Audio API or HTML5 Audio
+}
+
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// Initialize html5-qrcode
+const html5QrCode = new Html5Qrcode("reader");
+
+Html5Qrcode.getCameras().then(cameras => {
+  if(cameras && cameras.length){
+    const cameraId = cameras[0].id;
+    
+    html5QrCode.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: {width: 300, height: 300}
+      },
+      (decodedText) => {
+        onScanSuccess(decodedText);
+      },
+      (errorMessage) => {
+        // Ignore continuous scanning errors
+      }
+    ).catch(err => {
+      console.error('Camera start error:', err);
+      setStatus('❌ Camera failed to start', 'error');
+    });
+  } else {
+    setStatus('📷 No camera found', 'error');
+  }
+}).catch(err => {
+  console.error('Camera permission error:', err);
+  setStatus('🚫 Camera permission denied', 'error');
+});
+
+// Initialize
+updateOfflineCount();
+renderActivity();
+updateStats();
+</script>
 </body>
 </html>
