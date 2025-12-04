@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>My Tickets — EventPass</title>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">E</div>
+      <h1>EventPass</h1>
+    </div>
+    <nav>
+        <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="scanner.html">Scanner</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <h2>🎟️ My Tickets</h2>
+    <p>View and manage your event tickets</p>
+  </div>
+
+  <div class="grid">
+    <main>
+      <div id="ticketsList" class="tickets-container">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading your tickets...</p>
+        </div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="sidebar-card">
+        <h3>👤 Profile</h3>
+        <div id="userProfile"></div>
+        <div class="divider"></div>
+        <button class="btn btn-danger" onclick="logout()" style="width:100%">
+          🚪 Logout
+        </button>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>📊 Quick Stats</h3>
+        <div class="stats-mini" id="quickStats">
+          <div class="stat-mini">
+            <div class="stat-mini-value" id="totalTickets">0</div>
+            <div class="stat-mini-label">Total Tickets</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-value" id="activeTickets">0</div>
+            <div class="stat-mini-label">Active</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="location.href='events.html'" style="width:100%">
+          ➕ Register for More Events
+        </button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+
+</body>
+</html>
