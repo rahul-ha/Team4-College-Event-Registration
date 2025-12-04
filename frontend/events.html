@@ -73,6 +73,227 @@
   </div>
 </div>
 
+<script>
+const API_BASE = "http://localhost:5000/api";
+let selectedEventForPay = null;
 
+async function init(){
+  const user = JSON.parse(localStorage.getItem('user')||'null');
+  const accountBox = document.getElementById('accountBox');
+  
+  if(user){
+    accountBox.innerHTML = `
+      <div class="user-info">
+        <div class="user-name">${user.name}</div>
+        <div class="user-email">${user.email}</div>
+      </div>
+      <button class="btn btn-secondary" style="width:100%" onclick="logout()">Logout</button>
+    `;
+  } else {
+    accountBox.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text-muted)">
+        <p style="margin-bottom:16px">Not signed in</p>
+        <a href="index.html" class="btn btn-primary" style="text-decoration:none">Login</a>
+      </div>
+    `;
+  }
+
+  await loadEvents();
+}
+
+async function loadEvents(){
+  const wrap = document.getElementById('eventsList');
+  
+  try{
+    const res = await fetch(API_BASE+'/events');
+    const events = await res.json();
+    
+    if(!Array.isArray(events)){
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Unable to Load Events</h3>
+          <p>${JSON.stringify(events)}</p>
+        </div>
+      `;
+      return;
+    }
+    
+    if(events.length === 0){
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <h3>No Events Available</h3>
+          <p>Check back soon for upcoming events!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    for(const ev of events){
+      const isFree = !ev.price || ev.price === 0;
+      const seatsText = ev.seatsLeft === null || ev.seatsLeft === undefined ? 'Unlimited' : ev.seatsLeft;
+      const isLowSeats = ev.seatsLeft && ev.seatsLeft < 20;
+      
+      html += `
+        <div class="event-card">
+          <div class="event-header">
+            <div>
+              <h3>${escapeHtml(ev.name)}</h3>
+              <span class="event-badge ${isFree ? 'badge-free' : 'badge-paid'}">
+                ${isFree ? 'Free Entry' : '₹' + ev.price}
+              </span>
+            </div>
+          </div>
+          
+          <p class="event-description">
+            ${escapeHtml(ev.description || 'An exciting event you don\'t want to miss!')}
+          </p>
+          
+          <div class="event-meta">
+            <div class="meta-item">
+              <span class="meta-label">Price</span>
+              <span class="meta-value price">${isFree ? 'Free' : '₹' + ev.price}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Seats Available</span>
+              <span class="meta-value seats" style="${isLowSeats ? 'color:var(--warning)' : ''}">${seatsText}</span>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick='startRegister("${ev._id}", ${ev.price||0}, "${escapeHtml(ev.name)}")'>
+            🎟️ Register Now
+          </button>
+        </div>
+      `;
+    }
+    
+    wrap.innerHTML = html;
+  } catch(e){
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">❌</div>
+        <h3>Connection Error</h3>
+        <p>Unable to connect to the server. Please check your connection and try again.</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="margin-top:16px">Retry</button>
+      </div>
+    `;
+  }
+}
+
+function startRegister(eventId, price, name){
+  const user = JSON.parse(localStorage.getItem('user')||'null');
+  if(!user){
+    alert('Please login first to register for events');
+    location.href='index.html';
+    return;
+  }
+  
+  selectedEventForPay = { eventId, price, name };
+  
+  if(price > 0){
+    const detailsHtml = `
+      <div class="detail-row">
+        <span class="detail-label">Event</span>
+        <span class="detail-value">${escapeHtml(name)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Attendee</span>
+        <span class="detail-value">${escapeHtml(user.name)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">${escapeHtml(user.email)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount</span>
+        <span class="detail-value">₹${price}</span>
+      </div>
+    `;
+    
+    document.getElementById('paymentDetails').innerHTML = detailsHtml;
+    document.getElementById('payModal').classList.add('active');
+  } else {
+    submitRegistration(false);
+  }
+}
+
+function closePay(){
+  document.getElementById('payModal').classList.remove('active');
+  selectedEventForPay = null;
+}
+
+async function completePayment(){
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Processing...';
+  
+  await new Promise(r => setTimeout(r, 1200));
+  await submitRegistration(true);
+  
+  closePay();
+  btn.disabled = false;
+  btn.innerHTML = 'Pay Now';
+}
+
+async function submitRegistration(isPaid){
+  const user = JSON.parse(localStorage.getItem('user'));
+  const college = window.prompt('Enter your college name:', 'Your College') || '';
+  
+  if(!college){
+    alert('College name is required');
+    return;
+  }
+  
+  const payload = {
+    userId: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone || '',
+    college: college,
+    eventId: selectedEventForPay.eventId
+  };
+  
+  try{
+    const res = await fetch(API_BASE+'/tickets/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await res.json();
+    
+    if(data.success){
+      alert('🎉 Registration successful! Your ticket is now available in the Dashboard.');
+      location.href = 'dashboard.html';
+    } else {
+      alert('❌ Registration failed: ' + (data.error || 'Please try again'));
+    }
+  } catch(e){
+    alert('❌ Connection error. Please try again.');
+  }
+}
+
+function logout(){
+  if(confirm('Are you sure you want to logout?')){
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    location.href = 'index.html';
+  }
+}
+
+function goDashboard(){
+  location.href = 'dashboard.html';
+}
+
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+init();
+</script>
 </body>
 </html>
