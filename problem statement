@@ -1,0 +1,70 @@
+College Event Registration & Pass Generator Using QR CODE
+1. Background
+College fests and technical events often suffer from chaotic entry management. Organizers rely on paper lists or Excel sheets, leading to long queues, proxy entries, and difficulty in tracking actual footfall. Students frequently lose physical tickets, and verifying payments manually is prone to errors.
+2. Challenge
+Build an end-to-end Event Management System that handles participant registration, payment processing, and secure entry. The core feature is the generation of a unique, tamper-proof QR Code for every attendee, which acts as their digital pass. Volunteers must be able to scan this code to instantly verify and check in participants.
+
+3. User Roles & Flow
+Attendee (Student)
+Registration: Fills out a registration form (Name, College, Event selection).
+Payment: Completes payment (Mock or Real Gateway) for paid events.
+Ticket Generation: Receives a digital ticket via Email/Dashboard containing a unique QR Code.
+Entry: Shows the QR code at the venue gate for scanning.
+Event Organizer (Admin)
+Event Setup: Creates events, sets ticket prices, and defines seat limits.
+Analytics Dashboard: Views real-time stats: Total Registrations vs. Actual Check-ins.
+Data Export: Downloads participant lists for certification.
+Volunteer Management: Creates temporary accounts for gate volunteers.
+Volunteer (Gatekeeper)
+Scanner Interface: Accesses a mobile-friendly scanner (Web or App).
+Verification: Scans the Attendee's QR code.
+Action: System returns "Allowed" (Green) or "Duplicate/Invalid" (Red).
+Check-in: Marks the attendee as "Present" to prevent re-entry with the same code.
+
+4. Core Requirements
+Functional
+Unique QR Generation: Each registration must generate a unique string/token encrypted into a QR code.
+Duplicate Entry Protection: The system must flag a QR code that has already been scanned/used.
+Email Automation: Auto-send tickets with QR codes to the registered email address.
+Multi-Event Support: Ability to handle passes for different events (e.g., Concert vs. Hackathon) within the same fest.
+Search/Manual Entry: Fallback option to search user by ID/Phone if scanning fails.
+Non-Functional
+Offline Tolerance: The scanner should ideally work (or sync) even with spotty internet connectivity at the venue.
+Speed: Scanning and validation response time must be under 1 second to prevent queues.
+Security: Prevent URL manipulation (e.g., changing user_id=5 to user_id=6 to steal a pass).
+
+5. Technical Hints (Teams may choose their own stack)
+Frontend: React, Vue, or simple HTML/JS.
+Mobile (Scanner): Flutter or React Native (preferred for camera access) or libraries like html5-qrcode for Web.
+Backend: Node.js, Django, or Go.
+Database: MongoDB (flexible schema for event details) or PostgreSQL.
+Libraries:
+qrcode (Node/Python) for generating images.
+nodemailer (Node) or Django Mail for sending tickets.
+react-qr-reader for the scanning interface.
+
+6. Hackathon Deliverables
+Working Prototype demonstrating:
+Student flow: Register → Pay → Receive Email with QR.
+Volunteer flow: Open Scanner → Scan QR → Success Message → Retry (Duplicate Check).
+Admin flow: Create Event → View Live Count.
+Security Demo: Show what happens if someone tries to use a screenshot of an already scanned ticket.
+Database Schema: Show how users are linked to specific event tickets.
+
+7. Judging Criteria
+Category
+Weight
+System Reliability (No crashes during scanning)
+25%
+Anti-Fraud Logic (Duplicate entry prevention)
+25%
+User Experience (Fast registration & clear tickets)
+20%
+Speed/Performance (Scanner latency)
+15%
+Dashboard/Analytics (Data presentation for Admin)
+15%
+
+
+8. Outcome
+A paperless, efficient, and secure entry system that eliminates queues, prevents unauthorized access, and provides organizers with accurate data on event attendance.
