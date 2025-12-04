@@ -1,5 +1,6 @@
 // middleware/auth.js
-
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 exports.requireAuth = (roles = []) => {
   return async (req, res, next) => {
