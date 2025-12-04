@@ -1,0 +1,778 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Events — EventPass</title>
+<style>
+  :root{
+    --primary:#2563eb;
+    --primary-dark:#1e40af;
+    --secondary:#8b5cf6;
+    --bg:#0f172a;
+    --bg-light:#1e293b;
+    --card:#ffffff;
+    --text:#f8fafc;
+    --text-muted:#94a3b8;
+    --border:#334155;
+    --success:#10b981;
+    --warning:#f59e0b;
+    --accent-gradient:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  *{box-sizing:border-box;margin:0;padding:0}
+  
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    min-height:100vh;
+  }
+  
+  .wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:20px;
+  }
+  
+  /* Header */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 0;
+    margin-bottom:32px;
+    border-bottom:1px solid var(--border);
+  }
+  
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  
+  .logo-icon{
+    width:36px;
+    height:36px;
+    background:var(--accent-gradient);
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:18px;
+  }
+  
+  header h1{
+    font-size:20px;
+    font-weight:700;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  
+  nav{
+    display:flex;
+    gap:20px;
+    align-items:center;
+  }
+  
+  nav a{
+    color:var(--text-muted);
+    text-decoration:none;
+    font-weight:500;
+    transition:color 0.3s;
+    font-size:14px;
+  }
+  
+  nav a:hover{
+    color:var(--text);
+  }
+  
+  /* Grid Layout */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 360px;
+    gap:24px;
+  }
+  
+  /* Page Header */
+  .page-header{
+    margin-bottom:32px;
+  }
+  
+  .page-header h2{
+    font-size:32px;
+    margin-bottom:8px;
+  }
+  
+  .page-header p{
+    color:var(--text-muted);
+    font-size:16px;
+  }
+  
+  /* Event Cards */
+  .events-grid{
+    display:grid;
+    gap:20px;
+  }
+  
+  .event-card{
+    background:var(--bg-light);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    transition:all 0.3s;
+    position:relative;
+    overflow:hidden;
+  }
+  
+  .event-card:hover{
+    transform:translateY(-4px);
+    border-color:var(--secondary);
+    box-shadow:0 12px 40px rgba(139,92,246,0.3);
+  }
+  
+  .event-card::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:4px;
+    background:var(--accent-gradient);
+    opacity:0;
+    transition:opacity 0.3s;
+  }
+  
+  .event-card:hover::before{
+    opacity:1;
+  }
+  
+  .event-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:start;
+    margin-bottom:12px;
+  }
+  
+  .event-card h3{
+    font-size:22px;
+    margin-bottom:8px;
+    color:var(--text);
+  }
+  
+  .event-badge{
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  
+  .badge-free{
+    background:rgba(16,185,129,0.2);
+    color:var(--success);
+  }
+  
+  .badge-paid{
+    background:rgba(245,158,11,0.2);
+    color:var(--warning);
+  }
+  
+  .event-description{
+    color:var(--text-muted);
+    font-size:14px;
+    margin-bottom:20px;
+    line-height:1.6;
+  }
+  
+  .event-meta{
+    display:flex;
+    gap:24px;
+    margin-bottom:20px;
+    padding:16px;
+    background:rgba(255,255,255,0.03);
+    border-radius:8px;
+  }
+  
+  .meta-item{
+    display:flex;
+    flex-direction:column;
+  }
+  
+  .meta-label{
+    font-size:12px;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:4px;
+  }
+  
+  .meta-value{
+    font-size:18px;
+    font-weight:700;
+    color:var(--text);
+  }
+  
+  .meta-value.price{
+    color:var(--warning);
+  }
+  
+  .meta-value.seats{
+    color:var(--success);
+  }
+  
+  .btn{
+    padding:12px 24px;
+    border-radius:8px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    font-size:14px;
+    transition:all 0.3s;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  
+  .btn-primary{
+    background:var(--accent-gradient);
+    color:#fff;
+  }
+  
+  .btn-primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(102,126,234,0.4);
+  }
+  
+  .btn-secondary{
+    background:rgba(255,255,255,0.05);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  
+  .btn-secondary:hover{
+    background:rgba(255,255,255,0.1);
+    border-color:var(--text-muted);
+  }
+  
+  /* Sidebar */
+  .sidebar-card{
+    background:var(--bg-light);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    margin-bottom:20px;
+  }
+  
+  .sidebar-card h3{
+    font-size:18px;
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  
+  .user-info{
+    padding:16px;
+    background:rgba(255,255,255,0.03);
+    border-radius:8px;
+    margin-bottom:16px;
+  }
+  
+  .user-name{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  
+  .user-email{
+    font-size:13px;
+    color:var(--text-muted);
+  }
+  
+  .divider{
+    height:1px;
+    background:var(--border);
+    margin:20px 0;
+  }
+  
+  .quick-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  
+  .sidebar-card h4{
+    font-size:14px;
+    color:var(--text-muted);
+    margin-bottom:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  
+  /* Modal */
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    backdrop-filter:blur(4px);
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    padding:20px;
+  }
+  
+  .modal-overlay.active{
+    display:flex;
+  }
+  
+  .modal{
+    background:var(--card);
+    border-radius:16px;
+    width:100%;
+    max-width:480px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    animation:modalSlide 0.3s ease-out;
+  }
+  
+  @keyframes modalSlide{
+    from{
+      opacity:0;
+      transform:translateY(-20px);
+    }
+    to{
+      opacity:1;
+      transform:translateY(0);
+    }
+  }
+  
+  .modal-header{
+    padding:24px 24px 16px;
+    border-bottom:1px solid #e5e7eb;
+  }
+  
+  .modal-header h3{
+    font-size:22px;
+    color:#0f172a;
+    margin-bottom:4px;
+  }
+  
+  .modal-header p{
+    font-size:14px;
+    color:#64748b;
+  }
+  
+  .modal-body{
+    padding:24px;
+    color:#0f172a;
+  }
+  
+  .payment-detail{
+    background:#f8fafc;
+    padding:16px;
+    border-radius:8px;
+    margin-bottom:20px;
+  }
+  
+  .detail-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+    font-size:14px;
+  }
+  
+  .detail-row:last-child{
+    margin-bottom:0;
+    padding-top:8px;
+    border-top:1px solid #e5e7eb;
+    font-weight:600;
+    font-size:16px;
+  }
+  
+  .detail-label{
+    color:#64748b;
+  }
+  
+  .detail-value{
+    color:#0f172a;
+    font-weight:500;
+  }
+  
+  .modal-footer{
+    padding:16px 24px;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    gap:12px;
+  }
+  
+  .modal-footer .btn{
+    flex:1;
+  }
+  
+  /* Empty State */
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+  }
+  
+  .empty-icon{
+    width:80px;
+    height:80px;
+    margin:0 auto 20px;
+    background:rgba(139,92,246,0.1);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:36px;
+  }
+  
+  .empty-state h3{
+    font-size:20px;
+    margin-bottom:8px;
+  }
+  
+  .empty-state p{
+    color:var(--text-muted);
+  }
+  
+  /* Loading State */
+  .loading{
+    text-align:center;
+    padding:40px;
+    color:var(--text-muted);
+  }
+  
+  .spinner{
+    width:40px;
+    height:40px;
+    margin:0 auto 16px;
+    border:3px solid rgba(255,255,255,0.1);
+    border-top-color:var(--secondary);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  
+  @keyframes spin{
+    to{transform:rotate(360deg)}
+  }
+  
+  /* Responsive */
+  @media(max-width:768px){
+    .grid{
+      grid-template-columns:1fr;
+    }
+    
+    .event-meta{
+      flex-direction:column;
+      gap:12px;
+    }
+    
+    nav{
+      gap:12px;
+      font-size:13px;
+    }
+    
+    .page-header h2{
+      font-size:24px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">E</div>
+      <h1>EventPass</h1>
+    </div>
+    <nav>
+        <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="scanner.html">Scanner</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <h2>🎉 Upcoming Events</h2>
+    <p>Register for exciting college events and get your digital pass instantly</p>
+  </div>
+
+  <div class="grid">
+    <main>
+      <div id="eventsList" class="events-grid">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading events...</p>
+        </div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="sidebar-card">
+        <h3>👤 Your Account</h3>
+        <div id="accountBox"></div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>Quick Actions</h4>
+        <div class="quick-actions">
+          <button class="btn btn-primary" onclick="goDashboard()">📱 My Tickets</button>
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 Refresh Events</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="payModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💳 Complete Payment</h3>
+      <p>Mock payment gateway for demonstration</p>
+    </div>
+    <div class="modal-body">
+      <div class="payment-detail" id="paymentDetails"></div>
+      <p style="font-size:14px;color:#64748b;margin-top:16px">
+        This is a simulated payment. In production, this would connect to a real payment gateway.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closePay()">Cancel</button>
+      <button class="btn btn-primary" id="payBtn" onclick="completePayment()">Pay Now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:5000/api";
+let selectedEventForPay = null;
+
+async function init(){
+  const user = JSON.parse(localStorage.getItem('user')||'null');
+  const accountBox = document.getElementById('accountBox');
+  
+  if(user){
+    accountBox.innerHTML = `
+      <div class="user-info">
+        <div class="user-name">${user.name}</div>
+        <div class="user-email">${user.email}</div>
+      </div>
+      <button class="btn btn-secondary" style="width:100%" onclick="logout()">Logout</button>
+    `;
+  } else {
+    accountBox.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text-muted)">
+        <p style="margin-bottom:16px">Not signed in</p>
+        <a href="index.html" class="btn btn-primary" style="text-decoration:none">Login</a>
+      </div>
+    `;
+  }
+
+  await loadEvents();
+}
+
+async function loadEvents(){
+  const wrap = document.getElementById('eventsList');
+  
+  try{
+    const res = await fetch(API_BASE+'/events');
+    const events = await res.json();
+    
+    if(!Array.isArray(events)){
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Unable to Load Events</h3>
+          <p>${JSON.stringify(events)}</p>
+        </div>
+      `;
+      return;
+    }
+    
+    if(events.length === 0){
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <h3>No Events Available</h3>
+          <p>Check back soon for upcoming events!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    for(const ev of events){
+      const isFree = !ev.price || ev.price === 0;
+      const seatsText = ev.seatsLeft === null || ev.seatsLeft === undefined ? 'Unlimited' : ev.seatsLeft;
+      const isLowSeats = ev.seatsLeft && ev.seatsLeft < 20;
+      
+      html += `
+        <div class="event-card">
+          <div class="event-header">
+            <div>
+              <h3>${escapeHtml(ev.name)}</h3>
+              <span class="event-badge ${isFree ? 'badge-free' : 'badge-paid'}">
+                ${isFree ? 'Free Entry' : '₹' + ev.price}
+              </span>
+            </div>
+          </div>
+          
+          <p class="event-description">
+            ${escapeHtml(ev.description || 'An exciting event you don\'t want to miss!')}
+          </p>
+          
+          <div class="event-meta">
+            <div class="meta-item">
+              <span class="meta-label">Price</span>
+              <span class="meta-value price">${isFree ? 'Free' : '₹' + ev.price}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Seats Available</span>
+              <span class="meta-value seats" style="${isLowSeats ? 'color:var(--warning)' : ''}">${seatsText}</span>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick='startRegister("${ev._id}", ${ev.price||0}, "${escapeHtml(ev.name)}")'>
+            🎟️ Register Now
+          </button>
+        </div>
+      `;
+    }
+    
+    wrap.innerHTML = html;
+  } catch(e){
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">❌</div>
+        <h3>Connection Error</h3>
+        <p>Unable to connect to the server. Please check your connection and try again.</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="margin-top:16px">Retry</button>
+      </div>
+    `;
+  }
+}
+
+function startRegister(eventId, price, name){
+  const user = JSON.parse(localStorage.getItem('user')||'null');
+  if(!user){
+    alert('Please login first to register for events');
+    location.href='index.html';
+    return;
+  }
+  
+  selectedEventForPay = { eventId, price, name };
+  
+  if(price > 0){
+    const detailsHtml = `
+      <div class="detail-row">
+        <span class="detail-label">Event</span>
+        <span class="detail-value">${escapeHtml(name)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Attendee</span>
+        <span class="detail-value">${escapeHtml(user.name)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">${escapeHtml(user.email)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount</span>
+        <span class="detail-value">₹${price}</span>
+      </div>
+    `;
+    
+    document.getElementById('paymentDetails').innerHTML = detailsHtml;
+    document.getElementById('payModal').classList.add('active');
+  } else {
+    submitRegistration(false);
+  }
+}
+
+function closePay(){
+  document.getElementById('payModal').classList.remove('active');
+  selectedEventForPay = null;
+}
+
+async function completePayment(){
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Processing...';
+  
+  await new Promise(r => setTimeout(r, 1200));
+  await submitRegistration(true);
+  
+  closePay();
+  btn.disabled = false;
+  btn.innerHTML = 'Pay Now';
+}
+
+async function submitRegistration(isPaid){
+  const user = JSON.parse(localStorage.getItem('user'));
+  const college = window.prompt('Enter your college name:', 'Your College') || '';
+  
+  if(!college){
+    alert('College name is required');
+    return;
+  }
+  
+  const payload = {
+    userId: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone || '',
+    college: college,
+    eventId: selectedEventForPay.eventId
+  };
+  
+  try{
+    const res = await fetch(API_BASE+'/tickets/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await res.json();
+    
+    if(data.success){
+      alert('🎉 Registration successful! Your ticket is now available in the Dashboard.');
+      location.href = 'dashboard.html';
+    } else {
+      alert('❌ Registration failed: ' + (data.error || 'Please try again'));
+    }
+  } catch(e){
+    alert('❌ Connection error. Please try again.');
+  }
+}
+
+function logout(){
+  if(confirm('Are you sure you want to logout?')){
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    location.href = 'index.html';
+  }
+}
+
+function goDashboard(){
+  location.href = 'dashboard.html';
+}
+
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+init();
+</script>
+</body>
+</html>
