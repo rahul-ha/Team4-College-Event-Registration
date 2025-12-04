@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gate Scanner — EventPass</title>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">E</div>
+      <h1>EventPass</h1>
+    </div>
+    <nav>
+        <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <h2>📱 Gate Scanner</h2>
+    <p>Scan QR codes to verify and check-in attendees</p>
+  </div>
+
+  <div class="grid">
+    <main>
+      <!-- Scanner Card -->
+      <div class="card">
+        <h3>📷 Live QR Scanner</h3>
+        <div id="reader"></div>
+        <div id="scanResult" class="scan-status status-idle">
+          Ready to scan...
+        </div>
+        
+        <div id="offlineBadge" style="display:none" class="offline-badge">
+          <span class="pulse-dot"></span>
+          <span id="offlineCount">0 scans pending sync</span>
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn btn-warning" onclick="syncOffline()">
+            🔄 Sync Offline Scans
+          </button>
+        </div>
+      </div>
+
+      <!-- Manual Verify Card -->
+      <div class="card">
+        <h3>⌨️ Manual Verification</h3>
+        <div class="form-group">
+          <label>QR Token or Ticket ID</label>
+          <input id="manualToken" placeholder="Paste token or enter ticket ID">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="manualVerify()">
+            ✓ Verify
+          </button>
+          <button class="btn btn-secondary" onclick="searchByPhone()">
+            🔍 Search by Phone
+          </button>
+        </div>
+      </div>
+
+      <!-- Activity Log Card -->
+      <div class="card">
+        <h3>📊 Recent Activity</h3>
+        <div id="activity" class="activity-list">
+          <div class="empty-activity">No scan activity yet</div>
+        </div>
+      </div>
+    </main>
+
+    <aside>
+      <!-- Stats Card -->
+      <div class="card">
+        <h3>📈 Session Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value" id="successCount">0</div>
+            <div class="stat-label">Successful</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="failedCount">0</div>
+            <div class="stat-label">Failed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="card">
+        <h3>ℹ️ Scanner Info</h3>
+        
+        <div class="info-card">
+          <h4>🔌 Offline Mode</h4>
+          <p>Scans are saved locally when offline. Use "Sync Offline Scans" to upload when connection returns.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4>🚫 Duplicate Prevention</h4>
+          <p>Each QR code can only be scanned once. Duplicate attempts are automatically blocked.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4>⚡ Quick Tips</h4>
+          <p>• Hold QR code steady in frame<br>
+          • Ensure good lighting<br>
+          • Keep 6-12 inches away<br>
+          • Use manual entry if needed</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- html5-qrcode library -->
+
+</body>
+</html>
