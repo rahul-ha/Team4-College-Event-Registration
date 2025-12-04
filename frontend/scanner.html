@@ -4,7 +4,424 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Gate Scanner — EventPass</title>
-
+<style>
+  :root{
+    --primary:#2563eb;
+    --primary-dark:#1e40af;
+    --secondary:#8b5cf6;
+    --bg:#0f172a;
+    --bg-light:#1e293b;
+    --card:#ffffff;
+    --text:#f8fafc;
+    --text-muted:#94a3b8;
+    --border:#334155;
+    --success:#10b981;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --accent-gradient:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  *{box-sizing:border-box;margin:0;padding:0}
+  
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    min-height:100vh;
+  }
+  
+  .wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:20px;
+  }
+  
+  /* Header */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 0;
+    margin-bottom:32px;
+    border-bottom:1px solid var(--border);
+  }
+  
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  
+  .logo-icon{
+    width:36px;
+    height:36px;
+    background:var(--accent-gradient);
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:18px;
+  }
+  
+  header h1{
+    font-size:20px;
+    font-weight:700;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  
+  nav{
+    display:flex;
+    gap:20px;
+    align-items:center;
+  }
+  
+  nav a{
+    color:var(--text-muted);
+    text-decoration:none;
+    font-weight:500;
+    transition:color 0.3s;
+    font-size:14px;
+  }
+  
+  nav a:hover{
+    color:var(--text);
+  }
+  
+  /* Page Header */
+  .page-header{
+    margin-bottom:32px;
+  }
+  
+  .page-header h2{
+    font-size:32px;
+    margin-bottom:8px;
+  }
+  
+  .page-header p{
+    color:var(--text-muted);
+    font-size:16px;
+  }
+  
+  /* Grid Layout */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 380px;
+    gap:24px;
+  }
+  
+  /* Cards */
+  .card{
+    background:var(--bg-light);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    margin-bottom:24px;
+  }
+  
+  .card h3{
+    font-size:20px;
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  
+  .card h4{
+    font-size:16px;
+    margin:20px 0 12px;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+  
+  /* Scanner */
+  #reader{
+    width:100%;
+    max-width:500px;
+    border-radius:12px;
+    overflow:hidden;
+    border:2px solid var(--border);
+    background:#000;
+    margin:0 auto;
+  }
+  
+  .scan-status{
+    margin-top:20px;
+    padding:16px;
+    border-radius:8px;
+    text-align:center;
+    font-weight:600;
+    font-size:15px;
+    min-height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  
+  .status-idle{
+    background:rgba(148,163,184,0.1);
+    color:var(--text-muted);
+  }
+  
+  .status-scanning{
+    background:rgba(139,92,246,0.2);
+    color:var(--secondary);
+    animation:pulse 2s infinite;
+  }
+  
+  .status-success{
+    background:rgba(16,185,129,0.2);
+    color:var(--success);
+  }
+  
+  .status-error{
+    background:rgba(239,68,68,0.2);
+    color:var(--danger);
+  }
+  
+  .status-offline{
+    background:rgba(245,158,11,0.2);
+    color:var(--warning);
+  }
+  
+  @keyframes pulse{
+    0%, 100%{opacity:1}
+    50%{opacity:0.6}
+  }
+  
+  /* Offline Badge */
+  .offline-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 16px;
+    background:rgba(245,158,11,0.2);
+    color:var(--warning);
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    margin-top:12px;
+  }
+  
+  .offline-badge .pulse-dot{
+    width:8px;
+    height:8px;
+    background:var(--warning);
+    border-radius:50%;
+    animation:pulse 2s infinite;
+  }
+  
+  /* Form Elements */
+  .form-group{
+    margin-bottom:16px;
+  }
+  
+  label{
+    display:block;
+    font-size:13px;
+    color:var(--text-muted);
+    margin-bottom:6px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  
+  input{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    font-size:14px;
+    background:rgba(255,255,255,0.05);
+    color:var(--text);
+    transition:all 0.3s;
+  }
+  
+  input:focus{
+    outline:none;
+    border-color:var(--secondary);
+    background:rgba(255,255,255,0.08);
+  }
+  
+  /* Buttons */
+  .btn{
+    padding:12px 20px;
+    border-radius:8px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    font-size:14px;
+    transition:all 0.3s;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    justify-content:center;
+  }
+  
+  .btn-primary{
+    background:var(--accent-gradient);
+    color:#fff;
+  }
+  
+  .btn-primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(102,126,234,0.4);
+  }
+  
+  .btn-secondary{
+    background:rgba(255,255,255,0.05);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  
+  .btn-secondary:hover{
+    background:rgba(255,255,255,0.1);
+  }
+  
+  .btn-success{
+    background:var(--success);
+    color:#fff;
+  }
+  
+  .btn-warning{
+    background:var(--warning);
+    color:#fff;
+  }
+  
+  .btn-group{
+    display:flex;
+    gap:12px;
+    margin-top:12px;
+  }
+  
+  .btn-group .btn{
+    flex:1;
+  }
+  
+  /* Activity Log */
+  .activity-list{
+    max-height:400px;
+    overflow-y:auto;
+  }
+  
+  .activity-item{
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:8px;
+    border-left:3px solid;
+    transition:all 0.2s;
+  }
+  
+  .activity-item:hover{
+    transform:translateX(4px);
+  }
+  
+  .activity-success{
+    background:rgba(16,185,129,0.1);
+    border-color:var(--success);
+  }
+  
+  .activity-error{
+    background:rgba(239,68,68,0.1);
+    border-color:var(--danger);
+  }
+  
+  .activity-message{
+    font-size:14px;
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  
+  .activity-time{
+    font-size:11px;
+    color:var(--text-muted);
+  }
+  
+  .empty-activity{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--text-muted);
+  }
+  
+  /* Info Cards */
+  .info-card{
+    background:rgba(139,92,246,0.1);
+    border:1px solid rgba(139,92,246,0.3);
+    border-radius:8px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  
+  .info-card h4{
+    margin:0 0 8px;
+    padding:0;
+    border:none;
+    font-size:14px;
+    color:var(--secondary);
+  }
+  
+  .info-card p{
+    margin:0;
+    font-size:13px;
+    line-height:1.6;
+  }
+  
+  .stats-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  
+  .stat-box{
+    background:rgba(255,255,255,0.03);
+    padding:16px;
+    border-radius:8px;
+    text-align:center;
+  }
+  
+  .stat-value{
+    font-size:32px;
+    font-weight:700;
+    color:var(--secondary);
+  }
+  
+  .stat-label{
+    font-size:12px;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  
+  /* Responsive */
+  @media(max-width:1024px){
+    .grid{
+      grid-template-columns:1fr;
+    }
+  }
+  
+  @media(max-width:640px){
+    nav{
+      display:none;
+    }
+    
+    .page-header h2{
+      font-size:24px;
+    }
+    
+    .btn-group{
+      flex-direction:column;
+    }
+    
+    .stats-grid{
+      grid-template-columns:1fr;
+    }
+  }
+</style>
 </head>
 <body>
 <div class="wrap">
