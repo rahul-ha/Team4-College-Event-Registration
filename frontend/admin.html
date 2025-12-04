@@ -613,6 +613,270 @@
   </div>
 </div>
 
+<script>
+const API_BASE = "http://localhost:5000/api";
+let currentEventTickets = [];
+let currentEventName = '';
 
+async function createEvent(){
+  const name = document.getElementById('evName').value.trim();
+  if(!name){
+    alert('⚠️ Event name is required');
+    return;
+  }
+
+  const payload = {
+    name,
+    description: document.getElementById('evDesc').value,
+    price: Number(document.getElementById('evPrice').value || 0),
+    capacity: Number(document.getElementById('evCap').value || 0)
+  };
+
+  const token = localStorage.getItem('token');
+
+  try{
+    const res = await fetch(API_BASE + '/events/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? 'Bearer ' + token : ''
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if(data._id){
+      alert('✅ Event created successfully!');
+      document.getElementById('evName').value = '';
+      document.getElementById('evDesc').value = '';
+      document.getElementById('evPrice').value = '0';
+      document.getElementById('evCap').value = '100';
+      loadEvents();
+    } else {
+      alert('❌ Failed to create event: ' + (data.error || JSON.stringify(data)));
+    }
+  } catch(e){
+    alert('❌ Connection error: ' + e.message);
+  }
+}
+
+async function loadEvents(){
+  try{
+    const r = await fetch(API_BASE + '/events');
+    const events = await r.json();
+    const wrap = document.getElementById('eventsTable');
+    
+    if(!Array.isArray(events)){
+      wrap.innerHTML = '<p style="color:var(--text-muted)">No events available</p>';
+      return;
+    }
+    
+    if(events.length === 0){
+      wrap.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px">No events created yet. Create your first event!</p>';
+      return;
+    }
+    
+    let html = '<div class="table-container"><table><thead><tr><th>Event Name</th><th>Price</th><th>Capacity</th><th>Seats Left</th><th>Actions</th></tr></thead><tbody>';
+    
+    for(const e of events){
+      const seatsLeft = e.seatsLeft === null || e.seatsLeft === undefined ? e.capacity : e.seatsLeft;
+      const isFull = seatsLeft === 0;
+      const isLow = seatsLeft < 20 && seatsLeft > 0;
+      
+      html += `<tr>
+        <td><strong>${escapeHtml(e.name)}</strong></td>
+        <td>${e.price ? '₹' + e.price : '<span class="badge badge-success">Free</span>'}</td>
+        <td>${e.capacity || 'Unlimited'}</td>
+        <td>
+          <span class="badge ${isFull ? 'badge-danger' : isLow ? 'badge-warning' : 'badge-success'}">
+            ${seatsLeft}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="viewTickets('${e._id}','${escapeHtml(e.name)}')">
+            📋 View Tickets
+          </button>
+        </td>
+      </tr>`;
+    }
+    
+    html += '</tbody></table></div>';
+    wrap.innerHTML = html;
+    
+    // Update stats
+    document.getElementById('totalEvents').textContent = events.length;
+    
+    renderAnalytics(events);
+  } catch(e){
+    document.getElementById('eventsTable').innerHTML = '<p style="color:var(--danger)">Error loading events</p>';
+  }
+}
+
+async function viewTickets(eventId, eventName){
+  currentEventName = eventName;
+  document.getElementById('modalTitle').textContent = `🎟️ Tickets for ${eventName}`;
+  document.getElementById('modalBody').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading tickets...</p></div>';
+  document.getElementById('ticketsModal').classList.add('active');
+  
+  const token = localStorage.getItem('token');
+  
+  try{
+    const res = await fetch(API_BASE + '/tickets/event/' + eventId, {
+      headers: {'Authorization': token ? 'Bearer ' + token : ''}
+    });
+    
+    const data = await res.json();
+    
+    if(!Array.isArray(data)){
+      document.getElementById('modalBody').innerHTML = '<p style="color:var(--danger)">Error loading tickets</p>';
+      return;
+    }
+    
+    currentEventTickets = data;
+    
+    if(data.length === 0){
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center;padding:40px;color:#64748b">No registrations yet for this event.</p>';
+      return;
+    }
+    
+    let html = '<div class="table-container"><table><thead><tr><th>Ticket ID</th><th>Name</th><th>Email</th><th>Phone</th><th>College</th><th>Status</th></tr></thead><tbody>';
+    
+    data.forEach(t => {
+      html += `<tr>
+        <td><code style="font-size:11px">${t._id}</code></td>
+        <td>${escapeHtml(t.name || 'N/A')}</td>
+        <td>${escapeHtml(t.email || 'N/A')}</td>
+        <td>${escapeHtml(t.phone || 'N/A')}</td>
+        <td>${escapeHtml(t.college || 'N/A')}</td>
+        <td>
+          <span class="badge ${t.used ? 'badge-success' : 'badge-warning'}">
+            ${t.used ? '✓ Checked In' : 'Pending'}
+          </span>
+        </td>
+      </tr>`;
+    });
+    
+    html += '</tbody></table></div>';
+    document.getElementById('modalBody').innerHTML = html;
+  } catch(e){
+    document.getElementById('modalBody').innerHTML = '<p style="color:var(--danger)">Connection error</p>';
+  }
+}
+
+function closeTicketsModal(){
+  document.getElementById('ticketsModal').classList.remove('active');
+}
+
+function downloadCSV(){
+  if(currentEventTickets.length === 0){
+    alert('No tickets to download');
+    return;
+  }
+  
+  let csv = 'Ticket ID,Name,Email,Phone,College,Status,Issued At\n';
+  
+  currentEventTickets.forEach(t => {
+    csv += `${t._id},${escapeCsv(t.name||'')},${escapeCsv(t.email||'')},${escapeCsv(t.phone||'')},${escapeCsv(t.college||'')},${t.used?'Checked In':'Pending'},${t.issuedAt||''}\n`;
+  });
+  
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tickets-${currentEventName.replace(/[^a-z0-9]/gi, '-')}-${Date.now()}.csv`;
+  a.click();
+  
+  alert('✅ CSV downloaded successfully!');
+}
+
+async function renderAnalytics(events){
+  const analyticsDiv = document.getElementById('analytics');
+  
+  try{
+    let html = '<div class="table-container"><table><thead><tr><th>Event Name</th><th>Registered</th><th>Checked In</th><th>Check-in Rate</th></tr></thead><tbody>';
+    
+    let totalReg = 0;
+    let totalChecked = 0;
+    
+    for(const e of events){
+      const res = await fetch(API_BASE + '/tickets/event/' + e._id);
+      const tickets = await res.json();
+      const reg = Array.isArray(tickets) ? tickets.length : 0;
+      const checked = Array.isArray(tickets) ? tickets.filter(t => t.used).length : 0;
+      const rate = reg > 0 ? Math.round((checked / reg) * 100) : 0;
+      
+      totalReg += reg;
+      totalChecked += checked;
+      
+      html += `<tr>
+        <td><strong>${escapeHtml(e.name)}</strong></td>
+        <td>${reg}</td>
+        <td>${checked}</td>
+        <td>
+          <span class="badge ${rate > 70 ? 'badge-success' : rate > 40 ? 'badge-warning' : 'badge-danger'}">
+            ${rate}%
+          </span>
+        </td>
+      </tr>`;
+    }
+    
+    html += '</tbody></table></div>';
+    analyticsDiv.innerHTML = html;
+    
+    // Update overall stats
+    document.getElementById('totalRegistrations').textContent = totalReg;
+    document.getElementById('totalCheckins').textContent = totalChecked;
+    document.getElementById('checkInRate').textContent = totalReg > 0 ? Math.round((totalChecked / totalReg) * 100) + '%' : '0%';
+  } catch(e){
+    analyticsDiv.innerHTML = '<p style="color:var(--danger)">Error loading analytics</p>';
+  }
+}
+
+async function createVolunteer(){
+  const name = document.getElementById('volName').value.trim();
+  const email = document.getElementById('volEmail').value.trim();
+  const pass = document.getElementById('volPass').value;
+  
+  if(!name || !email || !pass){
+    alert('⚠️ Please fill in all volunteer information');
+    return;
+  }
+  
+  try{
+    const res = await fetch(API_BASE + '/auth/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, email, password: pass, role: 'volunteer'})
+    });
+    
+    const d = await res.json();
+    
+    if(d._id){
+      alert('✅ Volunteer account created successfully!');
+      // Clear form
+      document.getElementById('volName').value = '';
+      document.getElementById('volEmail').value = '';
+      document.getElementById('volPass').value = '';
+    } else {
+      alert('❌ Failed to create volunteer: ' + (d.error || JSON.stringify(d)));
+    }
+  } catch(e){
+    alert('❌ Connection error: ' + e.message);
+  }
+}
+
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function escapeCsv(s){
+  return `"${('' + s).replace(/"/g, '""')}"`;
+}
+
+// Initialize
+loadEvents();
+</script>
 </body>
 </html>
